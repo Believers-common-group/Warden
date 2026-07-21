@@ -1,0 +1,55 @@
+{
+  "title": "VSR MCP Plug-in Connector Licence Registration",
+  "type": "form",
+  "hidden": ["tenant_id", "organization_id", "vsr_licence_ref"],
+  "settings": {
+    "language": "en",
+    "is_public": true,
+    "progress_bar": "proportion",
+    "show_progress_bar": true,
+    "show_typeform_branding": false
+  },
+  "welcome_screens": [{
+    "ref": "welcome",
+    "title": "Register an MCP connector against an existing VSR licence",
+    "properties": {
+      "description": "Submission creates a Warden review record. It does not activate a connector or issue a VSR licence.",
+      "show_button": true,
+      "button_text": "Begin"
+    }
+  }],
+  "fields": [
+    {"ref":"organization_name","title":"Legal organization name","type":"short_text","validations":{"required":true}},
+    {"ref":"applicant_name","title":"Applicant full name","type":"short_text","validations":{"required":true}},
+    {"ref":"applicant_email","title":"Applicant email","type":"email","validations":{"required":true}},
+    {"ref":"jurisdiction","title":"Organization jurisdiction","type":"short_text","validations":{"required":true}},
+    {"ref":"vsr_licence_ref","title":"Existing VSR licence reference","type":"short_text","validations":{"required":true}},
+    {"ref":"requested_licence_tier","title":"Requested connector licence tier","type":"multiple_choice","properties":{"choices":[{"label":"Sandbox"},{"label":"Pilot"},{"label":"Production"}],"allow_multiple_selection":false},"validations":{"required":true}},
+    {"ref":"connector_name","title":"MCP connector name","type":"short_text","validations":{"required":true}},
+    {"ref":"provider_name","title":"Connector provider or operator","type":"short_text","validations":{"required":true}},
+    {"ref":"repository_url","title":"Source repository URL","type":"website","validations":{"required":false}},
+    {"ref":"manifest_url","title":"MCP manifest or server-card URL","type":"website","validations":{"required":true}},
+    {"ref":"transport_modes","title":"Supported MCP transports","type":"multiple_choice","properties":{"choices":[{"label":"stdio"},{"label":"Streamable HTTP"},{"label":"Custom transport"}],"allow_multiple_selection":true},"validations":{"required":true}},
+    {"ref":"deployment_model","title":"Deployment model","type":"multiple_choice","properties":{"choices":[{"label":"Provider-hosted"},{"label":"VSR-hosted"},{"label":"Customer self-hosted"},{"label":"Hybrid"}],"allow_multiple_selection":false},"validations":{"required":true}},
+    {"ref":"target_vsr_licences","title":"VSR products or licences permitted to invoke this connector","type":"multiple_choice","properties":{"choices":[{"label":"EmpireOS"},{"label":"RiverOS"},{"label":"Warden"},{"label":"DigitalMe"},{"label":"Silk"},{"label":"Genesis"},{"label":"Synnergyze"},{"label":"Virtual Silk Road"},{"label":"Creators Common"},{"label":"Believers Common"}],"allow_multiple_selection":true},"validations":{"required":true}},
+    {"ref":"tools_count","title":"Number of MCP tools","type":"number","validations":{"required":true,"min_value":0}},
+    {"ref":"resources_count","title":"Number of MCP resources","type":"number","validations":{"required":true,"min_value":0}},
+    {"ref":"prompts_count","title":"Number of MCP prompts","type":"number","validations":{"required":true,"min_value":0}},
+    {"ref":"capabilities_description","title":"Describe capabilities and boundaries","type":"long_text","validations":{"required":true}},
+    {"ref":"requested_operations","title":"Requested operations","type":"multiple_choice","properties":{"choices":[{"label":"Read/search"},{"label":"Create"},{"label":"Update"},{"label":"Delete"},{"label":"Execute jobs"},{"label":"Identity/consent"},{"label":"Payments/settlement"},{"label":"Files/storage"},{"label":"Network access"},{"label":"Device/sensor control"}],"allow_multiple_selection":true},"validations":{"required":true}},
+    {"ref":"destructive_actions","title":"Can any tool perform an irreversible action?","type":"yes_no","validations":{"required":true}},
+    {"ref":"human_approval","title":"Are sensitive actions protected by explicit human approval?","type":"yes_no","validations":{"required":true}},
+    {"ref":"warden_policy_enforcement","title":"Will every invocation pass through Warden policy evaluation?","type":"yes_no","validations":{"required":true}},
+    {"ref":"riveros_evidence","title":"Will material actions emit RiverOS evidence and receipts?","type":"yes_no","validations":{"required":true}},
+    {"ref":"data_classes","title":"Data classes processed","type":"multiple_choice","properties":{"choices":[{"label":"Public data"},{"label":"Business confidential"},{"label":"Personal data"},{"label":"Identity data"},{"label":"Financial data"},{"label":"Location data"},{"label":"Health data"},{"label":"Credentials/secrets"},{"label":"Device telemetry"},{"label":"No persistent data"}],"allow_multiple_selection":true},"validations":{"required":true}},
+    {"ref":"auth_methods","title":"Authentication methods","type":"multiple_choice","properties":{"choices":[{"label":"OAuth 2.0/OIDC"},{"label":"API key"},{"label":"JWT"},{"label":"mTLS"},{"label":"SSH/SFTP key"},{"label":"Device key"},{"label":"No authentication"}],"allow_multiple_selection":true},"validations":{"required":true}},
+    {"ref":"data_residency","title":"Data residency and processing locations","type":"long_text","validations":{"required":true}},
+    {"ref":"retention_days","title":"Maximum operational retention in days","type":"number","validations":{"required":true,"min_value":0}},
+    {"ref":"support_contact","title":"Security and operational support contact","type":"email","validations":{"required":true}},
+    {"ref":"truth_confirmation","title":"I confirm this submission is accurate and complete.","type":"legal","validations":{"required":true}},
+    {"ref":"warden_consent","title":"I authorize Warden to test, condition, approve, suspend, reject, or revoke this connector licence application.","type":"legal","validations":{"required":true}},
+    {"ref":"signatory_name","title":"Authorized signatory name","type":"short_text","validations":{"required":true}},
+    {"ref":"signatory_signature","title":"Authorized signature","type":"signature","validations":{"required":true}}
+  ],
+  "thankyou_screens": [{"ref":"submitted","title":"Application recorded for Warden review","properties":{"show_button":false}}]
+}

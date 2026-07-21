@@ -1,0 +1,6 @@
+{
+  "enabled": true,
+  "event_types": {"form_response": true},
+  "url": "https://ayrivdysmbphhlqjmdtc.supabase.co/functions/v1/typeform-mcp-license-intake",
+  "secret": "<retrieve vault secret typeform_mcp_webhook_v1>"
+}
