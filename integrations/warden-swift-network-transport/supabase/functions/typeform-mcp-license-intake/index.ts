@@ -2,13 +2,20 @@ const SUPABASE_URL = Deno.env.get("SUPABASE_URL") ?? "";
 const SERVICE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
 
 function json(status: number, body: unknown): Response {
-  return new Response(JSON.stringify(body), { status, headers: { "content-type": "application/json; charset=utf-8" } });
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { "content-type": "application/json; charset=utf-8" },
+  });
 }
 
 async function rpc<T>(name: string, body: Record<string, unknown>): Promise<T> {
   const response = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${name}`, {
     method: "POST",
-    headers: { "content-type": "application/json", apikey: SERVICE_KEY, authorization: `Bearer ${SERVICE_KEY}` },
+    headers: {
+      "content-type": "application/json",
+      apikey: SERVICE_KEY,
+      authorization: `Bearer ${SERVICE_KEY}`,
+    },
     body: JSON.stringify(body),
   });
   const text = await response.text();
@@ -27,6 +34,7 @@ function answerValue(answer: any): unknown {
     case "choices": return answer.choices?.labels ?? [];
     case "phone_number": return answer.phone_number ?? "";
     case "file_url": return answer.file_url ?? "";
+    case "date": return answer.date ?? "";
     default: return answer?.[answer?.type] ?? null;
   }
 }
@@ -67,6 +75,7 @@ function normalize(payload: any): Record<string, any> {
     production_endpoint: String(values.production_endpoint ?? ""),
     privacy_policy_url: String(values.privacy_policy_url ?? ""),
     security_document_url: String(values.security_document ?? ""),
+    business_case: String(values.business_case ?? ""),
     support_contact: String(values.support_contact ?? ""),
     capabilities: {
       tools_count: values.tools_count ?? 0,
@@ -84,17 +93,31 @@ function normalize(payload: any): Record<string, any> {
 Deno.serve(async (request: Request) => {
   if (request.method !== "POST") return json(405, { error: "method_not_allowed" });
   if (!SUPABASE_URL || !SERVICE_KEY) return json(503, { error: "service_not_configured" });
+
   const signature = request.headers.get("typeform-signature") ?? "";
   const rawBody = await request.text();
   let payload: any;
-  try { payload = JSON.parse(rawBody); } catch { return json(400, { error: "invalid_json" }); }
   try {
-    const valid = await rpc<boolean>("warden_verify_typeform_signature", { p_raw_body: rawBody, p_signature: signature });
+    payload = JSON.parse(rawBody);
+  } catch {
+    return json(400, { error: "invalid_json" });
+  }
+
+  try {
+    const valid = await rpc<boolean>("warden_verify_typeform_signature", {
+      p_raw_body: rawBody,
+      p_signature: signature,
+    });
     if (!valid) return json(403, { error: "invalid_typeform_signature" });
+
     const normalized = normalize(payload);
-    const required = ["organization_name", "applicant_name", "applicant_email", "vsr_licence_ref", "requested_licence_tier", "connector_name", "provider_name"];
+    const required = [
+      "organization_name", "applicant_name", "applicant_email", "vsr_licence_ref",
+      "requested_licence_tier", "connector_name", "provider_name",
+    ];
     const missing = required.filter((key) => !normalized[key]);
     if (missing.length > 0) return json(422, { error: "missing_required_answers", fields: missing });
+
     const result = await rpc<any>("warden_record_typeform_mcp_submission", {
       p_raw_payload: payload,
       p_normalized_payload: normalized,
