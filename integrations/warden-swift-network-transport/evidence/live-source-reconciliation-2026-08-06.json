@@ -1,0 +1,73 @@
+{
+  "record_type": "WARDEN_SUPABASE_LIVE_SOURCE_RECONCILIATION",
+  "schema_version": "0.1.0",
+  "recorded_at": "2026-08-06T05:30:00Z",
+  "project": {
+    "name": "vsr-merchant-integration-hub",
+    "project_ref": "ayrivdysmbphhlqjmdtc",
+    "region": "ap-south-1",
+    "observed_status": "ACTIVE_HEALTHY"
+  },
+  "authority_boundary": {
+    "github_is_canonical_source_and_provisioning_registry": true,
+    "supabase_is_runtime_store": true,
+    "this_record_grants_authority": false,
+    "this_record_approves_deployment": false,
+    "this_record_activates_tenant_or_connector": false,
+    "this_record_issues_vsr_licence": false,
+    "release_state": "BLOCKED_PENDING_REVIEW_AND_REPRODUCIBLE_DEPLOYMENT_EVIDENCE"
+  },
+  "repository": {
+    "full_name": "Believers-common-group/Warden",
+    "branch": "agent/warden-supabase-mcp-license-v06",
+    "pull_request": 1,
+    "baseline_head_before_reconciliation": "c597eae7a645f6c977bb2bd779a1b411152a6c52"
+  },
+  "edge_functions": [
+    {
+      "slug": "warden-ingest",
+      "live_version": 1,
+      "live_status": "ACTIVE",
+      "live_verify_jwt": false,
+      "live_bundle_sha256": "6818d9c2f5e1659d171ad70b7fbb70daa2360c81c5101cddd8ba84584410f8e5",
+      "source_path": "integrations/warden-swift-network-transport/supabase/functions/warden-ingest/index.ts",
+      "source_blob_sha": "658e24285bd8a0240f2931117ce6231984b2103b",
+      "mapping_status": "CANDIDATE_SOURCE_MATCH_PENDING_REPRODUCIBLE_BUNDLE_DIGEST",
+      "security_note": "verify_jwt is disabled because the function implements tenant API-key and signed-event verification. This exception remains subject to Warden/security review."
+    },
+    {
+      "slug": "typeform-mcp-license-intake",
+      "live_version": 1,
+      "live_status": "ACTIVE",
+      "live_verify_jwt": false,
+      "live_bundle_sha256": "01993c6c8dafb61ce456c836d2c80b867799e2141a0c7f209412d4e05393d179",
+      "source_path": "integrations/warden-swift-network-transport/supabase/functions/typeform-mcp-license-intake/index.ts",
+      "source_blob_sha": "86415259e1ac68c94ccc288a835f5d15572ee629",
+      "mapping_status": "RETRIEVED_LIVE_SOURCE_COMMITTED_PENDING_REPRODUCIBLE_BUNDLE_DIGEST",
+      "drift_corrected": [
+        "Typeform date-answer handling was present live but absent from the draft source.",
+        "The business_case normalized field was present live but absent from the draft source."
+      ],
+      "security_note": "verify_jwt is disabled for a signed webhook boundary. Typeform HMAC verification must remain mandatory and must be covered by negative-path tests."
+    }
+  ],
+  "migrations": {
+    "declared_source_paths": [
+      "integrations/warden-swift-network-transport/supabase/migrations/202607220001_add_warden_supabase_mcp_connector_v06_core.sql",
+      "integrations/warden-swift-network-transport/supabase/migrations/202607220002_add_warden_supabase_mcp_connector_v06_security_functions.sql",
+      "integrations/warden-swift-network-transport/supabase/migrations/202607220003_add_warden_supabase_mcp_connector_v06_commit_rpc.sql",
+      "integrations/warden-swift-network-transport/supabase/migrations/202607220004_add_warden_supabase_mcp_connector_v06_typeform_rpc_and_grants.sql"
+    ],
+    "live_inventory_status": "UNVERIFIED_DATABASE_RECOVERY_MODE",
+    "live_inventory_error": "Supabase migration inventory was unavailable during the reconciliation pass because the database reported recovery mode.",
+    "release_effect": "BLOCKED_UNTIL_LIVE_MIGRATION_VERSIONS_AND_SOURCE_DIGESTS_ARE_RECORDED"
+  },
+  "required_closure_evidence": [
+    "Re-run the live migration inventory after database recovery and bind each applied version to an immutable GitHub source path and commit.",
+    "Rebuild both Edge Function bundles from the committed source and compare reproducible SHA-256 digests with the live bundle digests.",
+    "Execute negative authentication, signature, tenant-isolation, replay and malformed-payload tests.",
+    "Record named Warden/security approval and an operational recovery path.",
+    "Keep the existing tenant pending until a separate licence and activation decision is issued."
+  ],
+  "riveros_evidence_reference": "PENDING_RECONCILIATION_RECEIPT"
+}

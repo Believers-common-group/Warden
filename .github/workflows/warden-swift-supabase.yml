@@ -1,0 +1,37 @@
+name: Warden Swift and Supabase integration
+
+on:
+  pull_request:
+    paths:
+      - 'integrations/warden-swift-network-transport/**'
+  push:
+    paths:
+      - 'integrations/warden-swift-network-transport/**'
+
+permissions:
+  contents: read
+
+jobs:
+  swift-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: integrations/warden-swift-network-transport
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swift-actions/setup-swift@v2
+        with:
+          swift-version: '6.2'
+      - run: swift test
+      - run: swift build -c release
+
+  contracts:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate Typeform contracts
+        run: |
+          python -m json.tool integrations/warden-swift-network-transport/typeform/mcp-connector-license-form.json >/dev/null
+          python -m json.tool integrations/warden-swift-network-transport/typeform/webhook-template.json >/dev/null
+      - name: Validate live-to-source reconciliation
+        run: python integrations/warden-swift-network-transport/scripts/validate_live_source_reconciliation.py
