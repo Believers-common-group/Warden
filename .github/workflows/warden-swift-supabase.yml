@@ -8,6 +8,9 @@ on:
     paths:
       - 'integrations/warden-swift-network-transport/**'
 
+permissions:
+  contents: read
+
 jobs:
   swift-test:
     runs-on: ubuntu-latest
@@ -26,5 +29,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - run: python -m json.tool integrations/warden-swift-network-transport/typeform/mcp-connector-license-form.json >/dev/null
-      - run: python -m json.tool integrations/warden-swift-network-transport/typeform/webhook-template.json >/dev/null
+      - name: Validate Typeform contracts
+        run: |
+          python -m json.tool integrations/warden-swift-network-transport/typeform/mcp-connector-license-form.json >/dev/null
+          python -m json.tool integrations/warden-swift-network-transport/typeform/webhook-template.json >/dev/null
+      - name: Validate live-to-source reconciliation
+        run: python integrations/warden-swift-network-transport/scripts/validate_live_source_reconciliation.py
