@@ -1,0 +1,176 @@
+policy:
+  id: WARDEN-LENSEOS-001
+  version: 0.1.0
+  status: engineering_baseline
+  change_id: GEN-CHG-20260809-LENSEOS-001
+  source_authority: Believers-common-group/genesis-stack:genesis
+
+principles:
+  - authorize_intent_not_raw_actuation
+  - least_context_necessary
+  - purpose_scoped_access
+  - environment_scoped_access
+  - time_bounded_grants
+  - explicit_human_context_consent
+  - safety_domain_may_further_constrain
+  - deny_if_required_authority_is_missing
+  - no_permission_from_capability_presence_alone
+
+intent_decisions:
+  statuses:
+    - ALLOW
+    - DENY
+    - ALLOW_WITH_LIMITS
+  mandatory_fields:
+    - request_id
+    - digitalme_actor_id
+    - environment_type
+    - purpose
+    - action
+    - issued_at
+    - expires_at
+
+context_classes:
+  physical_system:
+    default: ALLOW_WITH_LIMITS
+    examples:
+      - surface_temperature
+      - voltage
+      - zone_health
+      - calibration_state
+    retention: local_ephemeral_unless_material_event
+
+  environmental:
+    default: ALLOW_WITH_LIMITS
+    examples:
+      - ambient_light
+      - sun_direction
+      - rain
+      - weather
+      - motion
+    retention: local_ephemeral_unless_material_event
+
+  human_presence:
+    default: DENY
+    requires:
+      - explicit_purpose
+      - bounded_scope
+      - actor_or_environment_authority
+    examples:
+      - occupancy
+      - proximity
+      - head_pose
+
+  sensitive_human_context:
+    default: DENY
+    requires:
+      - explicit_consent
+      - explicit_purpose
+      - named_environment
+      - short_expiry
+      - local_processing_preference
+    examples:
+      - gaze
+      - camera
+      - microphone
+      - recording
+
+  remote_control:
+    default: DENY
+    requires:
+      - explicit_remote_control_grant
+      - named_actor
+      - named_surface
+      - named_environment
+      - short_expiry
+      - audit_event
+
+  digitalme_visual_profile:
+    default: ALLOW_WITH_LIMITS
+    requires:
+      - purpose_scoped_profile_request
+      - minimum_required_fields_only
+    rule: preference_continuity_not_state_cloning
+
+profile_rules:
+  WEAR:
+    default_intent_scope:
+      - adaptive_tint
+      - reduce_glare
+      - accessibility_adjustment
+    sensitive_context_requires_explicit_consent: true
+
+  DRIVE:
+    default_intent_scope:
+      - reduce_glare
+      - thermal_control
+      - hud_information_request
+    hard_rules:
+      - driver_visibility_cannot_be_reduced_below_safety_envelope
+      - passenger_privacy_cannot_compromise_driver_visibility
+      - physical_manual_safety_clear_may_bypass_application_runtime
+      - remote_control_default_deny
+
+  HOME:
+    default_intent_scope:
+      - daylight_control
+      - thermal_control
+      - privacy
+    hard_rules:
+      - local_manual_control_preserved
+      - egress_and_safety_conditions_dominate_privacy
+
+  DISPLAY:
+    default_intent_scope:
+      - ambient_adaptation
+      - anti_glare
+      - privacy
+      - accessibility_adjustment
+
+  SURFACE:
+    default_intent_scope:
+      - adaptive_optical_control
+      - status_overlay
+      - hazard_overlay
+    hard_rules:
+      - use_case_safety_envelope_required
+
+expiry:
+  default_grant_seconds: 300
+  sensitive_human_context_max_seconds: 60
+  remote_control_max_seconds: 60
+  on_expiry:
+    - stop_new_authorized_actions
+    - retain_only_material_evidence_required_by_policy
+    - fall_back_to_safe_local_behavior
+
+bounded_execution:
+  warden_authorization_is_necessary_but_not_sufficient: true
+  downstream_safety_domain:
+    may_clamp: true
+    may_deny: true
+    may_force_safe_state: true
+  executed_state_reporting:
+    must_report_requested_vs_executed: true
+    must_report_clamp_reason: true
+
+material_evidence:
+  durable_by_default: false
+  record_when:
+    - authorization_denied_for_safety_or_policy
+    - allow_with_limits_changes_requested_effect_materially
+    - unauthorized_sensitive_context_attempt
+    - remote_control_attempt
+    - persistent_fault_or_safety_intervention
+    - policy_version_change
+  routine_tint_or_glare_adjustment: local_telemetry_only
+
+validation:
+  required_cases:
+    - denied_intent_causes_no_actuation
+    - expired_grant_causes_no_new_actuation
+    - allow_with_limits_is_bounded
+    - sensitive_context_without_consent_is_denied
+    - remote_control_without_grant_is_denied
+    - drive_visibility_safety_dominates_privacy
+    - requested_vs_executed_state_is_truthfully_reported
