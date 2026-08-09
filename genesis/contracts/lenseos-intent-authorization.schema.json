@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://genesis.local/warden/lenseos-intent-authorization.schema.json",
+  "title": "Warden LENSEOS Intent Authorization",
+  "type": "object",
+  "required": ["request_id", "actor", "environment", "intent", "decision"],
+  "properties": {
+    "request_id": {"type": "string", "minLength": 1},
+    "change_id": {"type": ["string", "null"]},
+    "actor": {
+      "type": "object",
+      "required": ["digitalme_actor_id"],
+      "properties": {
+        "digitalme_actor_id": {"type": "string", "minLength": 1},
+        "role": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "environment": {
+      "type": "object",
+      "required": ["type"],
+      "properties": {
+        "type": {"enum": ["WEAR", "DRIVE", "HOME", "DISPLAY", "SURFACE", "UNKNOWN"]},
+        "environment_id": {"type": ["string", "null"]},
+        "jurisdiction": {"type": ["string", "null"]},
+        "safety_class": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "intent": {
+      "type": "object",
+      "required": ["action", "purpose"],
+      "properties": {
+        "action": {"type": "string", "minLength": 1},
+        "purpose": {"type": "string", "minLength": 1},
+        "target_surface": {"type": ["string", "null"]},
+        "target_region": {"type": ["string", "null"]},
+        "requested_value": {},
+        "duration_seconds": {"type": ["number", "null"], "minimum": 0},
+        "reason": {"type": ["string", "null"]}
+      },
+      "additionalProperties": true
+    },
+    "requested_context": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "physical_system",
+          "environment_light",
+          "environment_weather",
+          "motion",
+          "occupancy",
+          "proximity",
+          "head_pose",
+          "gaze",
+          "camera",
+          "microphone",
+          "recording",
+          "remote_control",
+          "location",
+          "digitalme_visual_profile"
+        ]
+      },
+      "uniqueItems": true
+    },
+    "decision": {
+      "type": "object",
+      "required": ["status", "issued_at", "expires_at"],
+      "properties": {
+        "status": {"enum": ["ALLOW", "DENY", "ALLOW_WITH_LIMITS"]},
+        "reason_code": {"type": ["string", "null"]},
+        "policy_refs": {"type": "array", "items": {"type": "string"}},
+        "issued_at": {"type": "string"},
+        "expires_at": {"type": "string"},
+        "limits": {
+          "type": "object",
+          "properties": {
+            "allowed_actions": {"type": "array", "items": {"type": "string"}},
+            "allowed_context": {"type": "array", "items": {"type": "string"}},
+            "max_duration_seconds": {"type": ["number", "null"], "minimum": 0},
+            "target_surfaces": {"type": "array", "items": {"type": "string"}},
+            "target_regions": {"type": "array", "items": {"type": "string"}},
+            "value_bounds": {"type": ["object", "null"]}
+          },
+          "additionalProperties": false
+        }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}
