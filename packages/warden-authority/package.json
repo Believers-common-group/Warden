@@ -1,0 +1,22 @@
+{
+  "name": "@believers-common/warden-authority",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-neutral Warden issuance and policy evaluation for governed Agent authority.",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build-check": "tsc --noEmit -p ./tsconfig.test.json",
+    "test": "pnpm --dir ../.. exec vitest run packages/warden-authority/test/issuance.test.ts"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ]
+}

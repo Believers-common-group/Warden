@@ -1,0 +1,97 @@
+# Implement AF-002 Warden issuance and policy evaluation
+
+This ExecPlan is a living document and must be maintained in accordance with `.agent/PLANS.md`.
+
+## Purpose / Big Picture
+
+After this change, callers can submit a normalized Agent issuance request to a provider-neutral Warden authority service and receive one of three outcomes: `ALLOW`, `ESCALATE`, or `DENY`. An `ALLOW` outcome produces a bounded authority envelope and issuance record only when Registry-backed principal, Pack, request, and policy inputs are valid. The OpenAI Agents SDK remains outside the authority boundary; it can consume the resulting issuance later but cannot create or expand it.
+
+The behavior is observable through focused unit tests in `packages/warden-authority/test/issuance.test.ts` and through a small pure TypeScript API exported from `packages/warden-authority/src/index.ts`.
+
+## Progress
+
+- [x] 2026-08-12T20:50:00Z Inspected repository contributor instructions and ExecPlan requirements.
+- [x] 2026-08-12T20:52:00Z Selected a new isolated `packages/warden-authority` package so authority logic does not enter `agents-core`.
+- [x] 2026-08-12T21:04:00Z Implemented normalized issuance types, policy rules, fail-closed evaluator, deterministic envelope hashing, and issuance derivation.
+- [x] 2026-08-12T21:07:00Z Added seven focused tests covering allow, escalate, deny, unknown capability, model self-authority isolation, validity, deterministic hashes, and constraint attenuation.
+- [ ] Run focused package checks and broader repository checks where available.
+- [ ] Open a draft PR and record exact-head verification/infrastructure state.
+
+## Surprises & Discoveries
+
+- Observation: The repository is the OpenAI Agents JS monorepo and does not currently contain a separate Warden authority package.
+  Evidence: `packages/` on `main` contains only `agents`, `agents-core`, `agents-openai`, `agents-realtime`, and `agents-extensions`.
+
+- Observation: Adding an ordinary package-level `vitest` devDependency would require a pnpm lockfile importer update even though Vitest already exists at the workspace root.
+  Evidence: `pnpm-lock.yaml` has a root importer with `vitest@^3.2.4`; the new package is intentionally lockfile-neutral and invokes the root binary through `pnpm --dir ../.. exec vitest`.
+
+## Decision Log
+
+- Decision: Add `packages/warden-authority` rather than modifying `agents-core`.
+  Rationale: `agents-core` defines agent workflow/runtime abstractions. AF-002 must preserve `Agent runtime != Warden authority`; an isolated package makes that boundary enforceable and provider-neutral.
+  Date/Author: 2026-08-12 / OpenAI.
+
+- Decision: Implement the first policy engine as deterministic rule evaluation over normalized inputs, with no model call inside authorization.
+  Rationale: Model output must never manufacture authority. AF-002 only needs the first `ALLOW | ESCALATE | DENY` boundary and a bounded envelope that can later be persisted through AF-001.
+  Date/Author: 2026-08-12 / OpenAI.
+
+- Decision: Treat any requested denied capability as request-level `DENY`, any escalation with no denial as request-level `ESCALATE`, and issue only when all requested capabilities are explicitly `ALLOW`.
+  Rationale: The RC1 issuance boundary should fail closed and must never silently create a partial standing issuance when the original request includes capability that needs stronger authority. Progressive capability requests can be submitted separately later.
+  Date/Author: 2026-08-12 / OpenAI.
+
+- Decision: Keep model/runtime authority claims in the input contract only as untrusted metadata and exclude them from all policy matching and envelope derivation.
+  Rationale: This makes the anti-self-authority invariant directly testable: changing model claims cannot change the Warden result.
+  Date/Author: 2026-08-12 / OpenAI.
+
+## Outcomes & Retrospective
+
+The first authority-domain slice now exists as an isolated pure TypeScript package. It has no model-provider, Agents SDK, database, Supabase, Neon, Vercel, or tool execution dependency. Verification is pending on an executable runner; until those commands run, code existence is not a test-pass claim.
+
+## Context and Orientation
+
+`packages/agents-core` contains the provider-neutral agent workflow runtime. It is useful later as a cognition/orchestration substrate, but it is not the Warden authority service. AF-001 in the separate Registry/control-plane repository defines persistence identifiers for Agent profiles, Packs, Agent identities, issuance requests, authority envelopes, issuances, model bindings, effects, and revocations. AF-002 therefore defines a pure authority-domain contract that can consume those identifiers without importing database or model-provider clients.
+
+A Warden policy rule in this package means an explicit deterministic instruction that matches a requested capability and returns one of three dispositions. `ALLOW` means the capability may be included in the bounded envelope, `ESCALATE` means a separate authority decision is required and the capability is not autonomous, and `DENY` means the capability must be excluded. The evaluator never executes tools and never calls an LLM.
+
+## Plan of Work
+
+`packages/warden-authority/src/types.ts` defines normalized request, resolved principal/Pack, policy, capability-decision, authority-envelope, and issuance records. `src/evaluate.ts` validates current principal/Pack/policy context and performs exact capability-rule matching with fail-closed default denial. `src/issue.ts` derives a deterministic content-hashed authority envelope and issuance only for fully allowed requests. `src/index.ts` exports the public API.
+
+`packages/warden-authority/test/issuance.test.ts` proves that unknown capabilities deny by default, escalation is not silently upgraded, a model/runtime claim cannot add authority, capability sets are attenuated to policy, invalid or expired Registry/Pack inputs deny issuance, identical inputs produce the same authority-envelope hash, and rule constraints are preserved in the envelope.
+
+## Concrete Steps
+
+From the repository root, run:
+
+    pnpm -F @believers-common/warden-authority build-check
+    pnpm -F @believers-common/warden-authority test
+
+Then run proportionate repository checks:
+
+    pnpm lint
+    pnpm -F @believers-common/warden-authority build
+
+If the full monorepo is practical on the connected runner, also run:
+
+    pnpm -r build-check
+    CI=1 pnpm test
+
+Expected focused result: seven AF-002 tests pass with no network credentials and no model-provider API calls.
+
+## Validation and Acceptance
+
+Acceptance requires observable tests for these cases. A Base Agent request for `entity.profile.read` and `service_request.create` is allowed when explicit policy allows both. `commercial_exception` returns escalation when policy says escalate. `contract.execute`, `payment.approve`, and `authority.delegate` deny. An unknown capability denies. Any attempted model/runtime-supplied authority additions do not affect the result because the evaluator derives authority only from the normalized request plus Warden policy. Expired principal, Pack, or policy validity causes fail-closed denial. An `ALLOW` result returns a bounded envelope with separate allowed, escalated, and denied capabilities and a deterministic content hash.
+
+## Idempotence and Recovery
+
+The evaluator is pure and has no side effects. Re-running it with the same normalized input produces the same decision and envelope hash. No live Warden, Registry, model, database, tool, credential, or production system is modified by these tests.
+
+## Artifacts and Notes
+
+The first persistence integration consumer will be the AF-001 Registry boundary. This package deliberately returns normalized identifiers and authorization/evidence references rather than performing persistence itself.
+
+## Interfaces and Dependencies
+
+The package exports `evaluateIssuanceRequest(input: IssuanceEvaluationInput): IssuanceEvaluationResult`. It does not depend on `@openai/agents-core`, OpenAI APIs, provider SDKs, Supabase, Neon, Vercel, or production secrets. It uses Node standard-library SHA-256 hashing only to make the authority-envelope content deterministic and tamper-evident for downstream persistence.
+
+Revision note: implementation progress, lockfile-neutral testing decision, fail-closed request disposition, and model self-authority isolation were recorded after the first code slice.
