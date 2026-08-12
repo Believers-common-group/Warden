@@ -8,16 +8,13 @@
   "scripts": {
     "build": "tsc",
     "build-check": "tsc --noEmit -p ./tsconfig.test.json",
-    "test": "vitest run test/issuance.test.ts"
+    "test": "pnpm --dir ../.. exec vitest run packages/warden-authority/test/issuance.test.ts"
   },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     }
-  },
-  "devDependencies": {
-    "vitest": "^3.2.4"
   },
   "files": [
     "dist"
