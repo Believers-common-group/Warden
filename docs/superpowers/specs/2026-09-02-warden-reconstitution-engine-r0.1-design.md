@@ -1,6 +1,6 @@
 # WARDEN-RECONSTITUTION-ENGINE-001 R0.1 — Design Specification
 
-**Status:** Design approved for implementation planning  
+**Status:** In-chat design approved; written specification pending final user review  
 **Date:** 2026-09-02  
 **Repository:** `Believers-common-group/Warden`  
 **Integration base:** `genesis`  
@@ -95,7 +95,7 @@ The engine is:
 
 **deterministic, pure, fail-closed, non-mutating, authority-source dependent, lineage preserving and memory-aware.**
 
-Same semantic input must produce the same canonical output hash.
+Same semantic input must produce the same canonical semantic result and output hash.
 
 ## 5. Canonical input contracts
 
@@ -129,6 +129,8 @@ export type ProposedTransitionSet = {
   authorityBasisRefs: string[];
 };
 ```
+
+`authorityBasisRefs` may be empty for proposals that do not require new authority, but any operation that creates, expands, replaces or materially re-scopes authority must resolve an explicit authority basis before it can pass.
 
 ### 5.3 TransitionProposal
 
@@ -269,9 +271,10 @@ The canonical pipeline is:
 8. Resolve memory disposition
 9. Run invariants
 10. Classify decision state
-11. Canonically sort output
-12. Hash canonical result
-13. Build River-ready simulation receipt
+11. Canonically sort semantic output
+12. Hash canonical semantic result
+13. Derive deterministic simulation ID
+14. Build River-ready simulation receipt
 ```
 
 ### 9.1 Envelope validation
@@ -279,13 +282,16 @@ The canonical pipeline is:
 Reject structurally invalid simulations before proposal evaluation. Required checks include:
 
 - snapshot ID/hash coherence;
-- transition-set ID uniqueness within the input envelope;
+- non-empty transition-set ID;
 - source snapshot reference match;
 - parseable effective time;
 - identified proposer;
-- unique proposal IDs;
+- unique proposal IDs within the transition set;
 - recognized transition operation;
-- required predecessor cardinality by operation.
+- required predecessor cardinality by operation;
+- syntactically valid authority-basis references when supplied.
+
+Operation-specific semantic validation determines whether an authority basis is mandatory.
 
 ### 9.2 Exact predecessor resolution
 
@@ -419,9 +425,9 @@ Durability classification never overrides privacy, lawful deletion, privilege, c
 - **INV-012** Every successor must point to authority provenance.
 - **INV-013** Every material change must have effective-time semantics.
 - **INV-014** Every blocked decision must return a stable reason code.
-- **INV-015** Same semantic inputs must produce the same canonical output hash.
+- **INV-015** Same semantic inputs must produce the same canonical semantic result and output hash.
 
-## 15. Canonicalization and hashing
+## 15. Canonicalization, simulation identity and hashing
 
 Canonicalization responsibilities:
 
@@ -449,6 +455,40 @@ Canonical sorting includes:
 - authority tuples by action + object + scope + source;
 - memory dispositions by memory ID;
 - findings by severity + code + subject reference.
+
+### 15.1 Semantic hash boundary
+
+The `outputHash` is computed over a canonical **semantic simulation payload** containing:
+
+- source snapshot ID/hash;
+- transition-set ID/hash;
+- engine ID/version/mode;
+- status;
+- decisions;
+- blockers;
+- warnings;
+- summary.
+
+It excludes receipt-only observational metadata such as `generatedAt`, and excludes the receipt's own `outputHash` field to avoid recursive hashing.
+
+### 15.2 Deterministic simulation ID
+
+R0.1 derives `simulationId` deterministically after input canonicalization:
+
+```text
+simulationId =
+  "WRSIM-" + first 24 lowercase hex characters of
+  SHA-256(
+    "WARDEN-RECONSTITUTION-ENGINE-001" + "\n" +
+    "0.1.0" + "\n" +
+    snapshotHash + "\n" +
+    transitionSetHash
+  )
+```
+
+The input hashes are lowercase hexadecimal SHA-256 strings over their respective canonical payloads. The literal newline separator is part of the derivation contract.
+
+Therefore identical semantic inputs produce the same `simulationId`, decisions, findings, summary and `outputHash`. `generatedAt` may differ between receipt emissions without changing semantic identity or hash.
 
 ## 16. River-ready receipt
 
@@ -489,7 +529,7 @@ export type RiverReadySimulationReceipt = {
 };
 ```
 
-`generatedAt` is receipt metadata and must not influence the deterministic semantic output hash.
+`generatedAt` is receipt metadata and does not influence `simulationId` or `outputHash`.
 
 ## 17. Package boundary
 
@@ -572,6 +612,8 @@ simulateReconstitution(
   options?: SimulationOptions,
 ): ReconstitutionSimulation
 ```
+
+`SimulationOptions` in R0.1 may only control deterministic presentation/validation features that do not alter authority semantics. No option may enable side effects.
 
 ## 20. Persistence policy
 
@@ -669,7 +711,7 @@ Determinism tests deliberately reorder:
 - relationship arrays;
 - assignment arrays;
 
-and require identical canonical semantic output and identical output hashes.
+and require identical canonical semantic output and identical output hashes. Receipt emission time is explicitly excluded from semantic equality.
 
 Required invariant properties include:
 
@@ -699,7 +741,7 @@ Implementation is not R0.1-complete until all gates pass:
 - **A12** conflicting proposals block deterministically;
 - **A13** high-risk authority expansion is surfaced;
 - **A14** canonical output is invariant to semantically irrelevant input ordering;
-- **A15** identical semantic input produces identical output hash;
+- **A15** identical semantic input produces identical `simulationId` and output hash;
 - **A16** receipt states `activeAuthorityCreated=false`;
 - **A17** receipt states `registryMutationPerformed=false`;
 - **A18** ordinary governance failures return reason codes rather than uncaught exceptions;
