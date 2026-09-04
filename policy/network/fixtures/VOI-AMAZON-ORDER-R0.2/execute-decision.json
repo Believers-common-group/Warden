@@ -1,0 +1,33 @@
+{
+  "decision_version": "0.2",
+  "change_set": "GCS-20260905-001",
+  "decision_id": "warden-decision-voi-reserve-test-0001",
+  "correlation_id": "corr-voi-amazon-test-0001",
+  "requested_capability_id": "voi.erp.inventory",
+  "requested_action": "EXECUTE",
+  "requested_deed": "RESERVE_INVENTORY",
+  "decision": "ALLOW_QUALIFICATION_EXECUTE",
+  "scope": "SYNTHETIC_ADAPTER_ONLY",
+  "authorization_ref": "authz-qual-voi-reserve-0001",
+  "constraints": {
+    "max_quantity": 1,
+    "allowed_product_id": "qual.product.voi.test.001",
+    "allowed_location_id": "qual.location.voi.inventory.001",
+    "required_idempotency_key_prefix": "voi:inventory:reserve:TEST-AMZ-IN-0001:",
+    "production_erp_write": false,
+    "marketplace_write": false,
+    "fulfilment_commitment": false,
+    "settlement": false,
+    "river_effect_verification_required": true,
+    "rollback_contract_required": true,
+    "reconciliation_contract_required": true
+  },
+  "denied_actions": [
+    "CAPTURE_PAYMENT",
+    "SETTLE",
+    "SHIP",
+    "ACKNOWLEDGE_TO_MARKETPLACE",
+    "WRITE_PRODUCTION_ERP"
+  ],
+  "promotion_condition": "real Genesis product/location refs plus qualified production adapter plus successful effect verification"
+}
