@@ -1,0 +1,26 @@
+{
+  "decision_version": "0.1",
+  "change_set": "GCS-20260905-001",
+  "event_id": "evt-voi-amazon-test-0001",
+  "correlation_id": "corr-voi-amazon-test-0001",
+  "capability_id": "amazon.marketplace.orders",
+  "requested_action": "PROPOSE",
+  "decision": "ALLOW_PROPOSAL_ONLY",
+  "policy_ref": "warden.network.capability.r0.1",
+  "authorization_ref": "authz-test-voi-amazon-0001",
+  "constraints": {
+    "read_source_order": true,
+    "create_inventory_proposal": true,
+    "write_inventory": false,
+    "acknowledge_order_to_source": false,
+    "initiate_fulfilment": false,
+    "initiate_payment_or_settlement": false
+  },
+  "blocking_conditions": [
+    "digitalme_id unresolved",
+    "canonical_product_id unresolved",
+    "inventory_location_id unresolved",
+    "execution policy not admitted"
+  ],
+  "decision_state": "PROPOSED_NOT_EXECUTABLE"
+}
