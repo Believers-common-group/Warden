@@ -1,0 +1,100 @@
+schema_version: "0.1"
+change_set_id: GCS-20260905-001
+status: INTEGRATION_DRAFT
+canonical_capability_source: genesis-stack/standards/network/CAPABILITY-REGISTRY-R0.1.yaml
+
+principles:
+  credentials_do_not_grant_authority: true
+  default_decision: DENY
+  explicit_context_required: true
+  river_evidence_required_for_verified_state: true
+  irreversible_settlement_enabled: false
+
+verbs:
+  DISCOVER:
+    effect: NONE
+    requires_authorization: false
+  READ:
+    effect: NONE
+    requires_authorization: true
+  PROPOSE:
+    effect: NONE
+    requires_authorization: true
+  AUTHORISE:
+    effect: AUTHORITY_STATE_CHANGE
+    requires_authorization: true
+  EXECUTE:
+    effect: EXTERNAL_OR_ENTERPRISE_SIDE_EFFECT
+    requires_authorization: true
+  VERIFY:
+    effect: EVIDENCE_STATE_CHANGE
+    requires_authorization: true
+  SETTLE:
+    effect: ECONOMIC_FINALITY
+    requires_authorization: true
+    enabled: false
+
+required_context:
+  - capability_id
+  - source_system
+  - organisation_id
+  - workspace_id
+  - requested_action
+  - correlation_id
+
+context_resolution:
+  digitalme_id: REQUIRED_FOR_HUMAN_OR_AGENT_ACTOR
+  role_id: REQUIRED_WHEN_ACTION_DERIVES_FROM_ROLE
+  ark_id: REQUIRED_WHEN_ARK_SCOPED
+  bnr_id: REQUIRED_WHEN_BNR_SCOPED
+  location_id: REQUIRED_WHEN_LOCATION_SCOPED
+
+side_effect_rules:
+  READ_ONLY_INGRESS:
+    execute_allowed: false
+    minimum_action: READ
+  REVERSIBLE_WRITE_WITH_RECONCILIATION:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    verify_after_execution: true
+  SPEND_CAPABLE:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    explicit_budget_scope_required: true
+    verify_after_execution: true
+  PHYSICAL_WORLD_EFFECT:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    explicit_location_scope_required: true
+    verify_after_execution: true
+  INFRASTRUCTURE_MUTATION:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    explicit_environment_scope_required: true
+    verify_after_execution: true
+  DATA_MUTATION:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    explicit_data_scope_required: true
+    verify_after_execution: true
+  ENTERPRISE_INVENTORY_MUTATION:
+    execute_allowed: true
+    minimum_action: EXECUTE
+    explicit_organisation_scope_required: true
+    verify_after_execution: true
+
+first_slice:
+  id: VOI-AMAZON-ORDER-R0.1
+  ingress_capability: amazon.marketplace.orders
+  enterprise_target: voi.erp.inventory
+  allowed_initial_actions:
+    - READ
+    - PROPOSE
+  autonomous_execute: false
+  autonomous_settle: false
+  promotion_requires:
+    - deterministic_source_to_envelope_fixture
+    - identity_and_relationship_resolution
+    - explicit_execution_policy
+    - idempotency_and_reconciliation_test
+    - river_receipt_verification
