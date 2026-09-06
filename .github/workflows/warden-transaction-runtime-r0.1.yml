@@ -1,0 +1,30 @@
+name: Warden Transaction Runtime R0.1
+
+on:
+  pull_request:
+    branches:
+      - genesis
+    paths:
+      - 'packages/agents-core/src/extensions/wardenTransactionRuntime.ts'
+      - 'packages/agents-core/test/extensions/wardenTransactionRuntime.test.ts'
+      - '.github/workflows/warden-transaction-runtime-r0.1.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  focused-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.26.1
+          run_install: false
+      - uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run focused Warden transaction runtime tests
+        run: pnpm exec vitest run packages/agents-core/test/extensions/wardenTransactionRuntime.test.ts
