@@ -7,6 +7,7 @@ on:
     paths:
       - 'packages/agents-core/src/extensions/wardenTransactionRuntime.ts'
       - 'packages/agents-core/test/extensions/wardenTransactionRuntime.test.ts'
+      - 'packages/agents-core/vitest.warden-runtime.config.ts'
       - '.github/workflows/warden-transaction-runtime-r0.1.yml'
 
 permissions:
@@ -26,8 +27,5 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - name: Build package self-exports used by the test runtime
-        run: pnpm build
       - name: Run focused Warden transaction runtime tests
-        working-directory: packages/agents-core
-        run: pnpm exec vitest run test/extensions/wardenTransactionRuntime.test.ts
+        run: pnpm exec vitest run --config packages/agents-core/vitest.warden-runtime.config.ts
