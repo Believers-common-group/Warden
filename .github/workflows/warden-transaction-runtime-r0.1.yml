@@ -26,5 +26,8 @@ jobs:
           node-version: '22'
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build package self-exports used by the test runtime
+        run: pnpm build
       - name: Run focused Warden transaction runtime tests
-        run: pnpm exec vitest run packages/agents-core/test/extensions/wardenTransactionRuntime.test.ts
+        working-directory: packages/agents-core
+        run: pnpm exec vitest run test/extensions/wardenTransactionRuntime.test.ts
