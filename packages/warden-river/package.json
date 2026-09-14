@@ -1,0 +1,25 @@
+{
+  "name": "@warden/river",
+  "version": "0.1.0",
+  "description": "Effect receipts and evidence primitives for Warden",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build-check": "tsc --noEmit -p ./tsconfig.test.json"
+  },
+  "dependencies": {
+    "@warden/core": "workspace:*"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "require": "./dist/index.js",
+      "import": "./dist/index.mjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}

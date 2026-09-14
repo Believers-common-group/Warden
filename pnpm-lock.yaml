@@ -564,6 +564,29 @@ importers:
         specifier: ^3.25.40 || ^4.0
         version: 3.25.76
 
+  packages/warden-audit-gate: {}
+
+  packages/warden-core: {}
+
+  packages/warden-identity: {}
+
+  packages/warden-mcp-proxy: {}
+
+  packages/warden-multistream:
+    dependencies:
+      '@warden/core':
+        specifier: workspace:*
+        version: link:../warden-core
+      '@warden/river':
+        specifier: workspace:*
+        version: link:../warden-river
+
+  packages/warden-river:
+    dependencies:
+      '@warden/core':
+        specifier: workspace:*
+        version: link:../warden-core
+
 packages:
 
   '@ai-sdk/gateway@1.0.12':

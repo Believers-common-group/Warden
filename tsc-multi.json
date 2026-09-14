@@ -8,6 +8,12 @@
     "packages/agents-openai/tsconfig.json",
     "packages/agents-realtime/tsconfig.json",
     "packages/agents/tsconfig.json",
-    "packages/agents-extensions/tsconfig.json"
+    "packages/agents-extensions/tsconfig.json",
+    "packages/warden-identity/tsconfig.json",
+    "packages/warden-core/tsconfig.json",
+    "packages/warden-river/tsconfig.json",
+    "packages/warden-audit-gate/tsconfig.json",
+    "packages/warden-multistream/tsconfig.json",
+    "packages/warden-mcp-proxy/tsconfig.json"
   ]
 }

@@ -1,0 +1,22 @@
+{
+  "name": "@warden/mcp-proxy",
+  "version": "0.1.0",
+  "description": "Qualification-only mandatory mediation for Desktop Commander MCP",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "build-check": "tsc --noEmit -p ./tsconfig.test.json"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "license": "MIT"
+}

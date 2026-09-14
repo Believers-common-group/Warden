@@ -149,3 +149,6 @@ bundled/
 
 .wrangler/
 .dev.vars
+
+# Local Docker MCP client configuration
+.vscode/mcp.json

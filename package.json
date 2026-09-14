@@ -42,6 +42,8 @@
     "examples:tools-shell": "pnpm -F tools start:shell",
     "examples:tools-apply-patch": "pnpm -F tools start:apply-patch",
     "examples:tool-filter": "tsx examples/mcp/tool-filter-example.ts",
+    "warden:audit-gate": "pnpm -F @warden/audit-gate start",
+    "warden:demo-target": "pnpm -F @warden/audit-gate start:target",
     "ci:publish": "pnpm publish -r --no-git-checks --access public",
     "bump-version": "changeset version && pnpm -F @openai/* prebuild",
     "prepare": "husky",

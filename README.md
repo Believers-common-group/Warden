@@ -5,6 +5,16 @@
 
 The OpenAI Agents SDK is a lightweight yet powerful framework for building multi-agent workflows in JavaScript/TypeScript. It is provider-agnostic, supporting OpenAI APIs and more.
 
+## Warden additive architecture
+
+This fork keeps the upstream OpenAI Agents SDK packages and execution internals compatible while adding Warden governance as separate workspace packages:
+
+- `@warden/identity` models DigitalMe principals, provider identities, GitHub bindings, and session identity.
+- `@warden/core` models authority, consent, authorization decisions, and executable Action Contracts.
+- `@warden/river` models effect receipts and evidence for later RiverOS integration.
+
+Authentication establishes a provider identity; it does not grant Warden authority. Warden resolves that identity to a DigitalMe principal and authorizes a proposed action before an Action Contract can be executed. These packages are sibling modules under `packages/` and do not modify or import private upstream SDK internals.
+
 <img src="https://cdn.openai.com/API/docs/images/orchestration.png" alt="Image of the Agents Tracing UI" style="max-height: 803px;">
 
 > [!NOTE]
