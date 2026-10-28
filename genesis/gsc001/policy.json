@@ -1,0 +1,23 @@
+{
+  "schema": "genesis.gsc001.warden-policy/v1",
+  "policy_id": "WARDEN-GSC001-OCM",
+  "version": "0.1.0",
+  "status": "DRAFT_ONLY",
+  "default": "DENY",
+  "advisory_actions": [
+    "read_evidence",
+    "dry_run",
+    "propose_repair"
+  ],
+  "revoked_actors": [],
+  "execution_grants_issued": false,
+  "required_approval": {
+    "S0": "incident_commander_plus_independent_reviewer",
+    "S1": "security_or_domain_owner_plus_independent_reviewer",
+    "S2": "domain_owner",
+    "S3": "bounded_change_review",
+    "S4": "preapproved_recipe_only"
+  },
+  "separation_of_duties": true,
+  "production_autonomous_write": false
+}
