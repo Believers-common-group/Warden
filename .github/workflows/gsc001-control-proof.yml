@@ -1,0 +1,31 @@
+name: GSC-001 independent control proof (test-only)
+on:
+  pull_request:
+    paths:
+      - 'genesis/gsc001/control_proof.py'
+      - 'genesis/gsc001/test_control_proof.py'
+      - 'genesis/gsc001/CONTROL_PROOF_R04.md'
+      - '.github/workflows/gsc001-control-proof.yml'
+  push:
+    branches: [genesis]
+    paths:
+      - 'genesis/gsc001/control_proof.py'
+      - 'genesis/gsc001/test_control_proof.py'
+      - 'genesis/gsc001/CONTROL_PROOF_R04.md'
+      - '.github/workflows/gsc001-control-proof.yml'
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install isolated verifier dependency
+        run: python3 -m pip install 'cryptography>=42,<48'
+      - name: Run cryptographic negative and prevention-control tests
+        working-directory: genesis/gsc001
+        run: python3 -m unittest test_control_proof.py -v
