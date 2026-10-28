@@ -1,0 +1,23 @@
+name: GSC-001 signed advisory offline verification
+on:
+  pull_request:
+    paths: ['genesis/gsc001/**', '.github/workflows/gsc001-signed-advisory.yml']
+  push:
+    branches: [genesis]
+    paths: ['genesis/gsc001/**', '.github/workflows/gsc001-signed-advisory.yml']
+permissions:
+  contents: read
+jobs:
+  signed-advisory:
+    runs-on: ubuntu-latest
+    timeout-minutes: 7
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install pinned test cryptography library
+        run: python3 -m pip install cryptography==46.0.4
+      - name: Validate signed test-only advisory
+        working-directory: genesis/gsc001
+        run: python3 -m unittest test_signed_advisory.py -v
