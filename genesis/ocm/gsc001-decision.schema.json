@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "GSC-001 advisory decision",
+  "type": "object",
+  "required": [
+    "schema",
+    "event_id",
+    "effective_severity",
+    "lane",
+    "authority",
+    "execute",
+    "promote"
+  ],
+  "properties": {
+    "schema": {
+      "const": "genesis.gsc001.warden.decision/v1"
+    },
+    "event_id": {
+      "type": "string"
+    },
+    "effective_severity": {
+      "enum": [
+        "S0",
+        "S1",
+        "S2",
+        "S3",
+        "S4"
+      ]
+    },
+    "lane": {
+      "enum": [
+        "CONTAIN_AND_ESCALATE",
+        "HOLD_UNKNOWN",
+        "HOLD_HUMAN_REVIEW",
+        "PROPOSE_READ_ONLY_DIAGNOSTIC"
+      ]
+    },
+    "authority": {
+      "const": "ADVISORY_ONLY_NO_GRANT"
+    },
+    "execute": {
+      "const": false
+    },
+    "promote": {
+      "const": false
+    }
+  }
+}
