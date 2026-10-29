@@ -1,0 +1,21 @@
+name: GSC-001 Warden admission reference
+on:
+  pull_request:
+    paths: ['genesis/gsc001/**','.github/workflows/gsc001-warden.yml']
+  push:
+    branches: [genesis]
+    paths: ['genesis/gsc001/**','.github/workflows/gsc001-warden.yml']
+permissions:
+  contents: read
+jobs:
+  admission:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Validate fail-closed preview
+        working-directory: genesis/gsc001
+        run: python3 -m unittest test_admission.py -v
