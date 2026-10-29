@@ -1,0 +1,22 @@
+name: GSC-001 synthetic capability negative tests
+on:
+  pull_request:
+    paths: ['genesis/gsc001/**', '.github/workflows/gsc001-synthetic-capability.yml']
+  push:
+    branches: [genesis]
+    paths: ['genesis/gsc001/**', '.github/workflows/gsc001-synthetic-capability.yml']
+permissions:
+  contents: read
+jobs:
+  test-only:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install cryptography==46.0.4
+      - name: Verify synthetic-only capability gates
+        working-directory: genesis/gsc001
+        run: python3 -m unittest test_synthetic_capability.py -v
