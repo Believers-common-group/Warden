@@ -1,0 +1,22 @@
+name: GSC-001 independent review dossier (test-only)
+on:
+  pull_request:
+    paths: ['genesis/gsc001/review_dossier.py','genesis/gsc001/test_review_dossier.py','.github/workflows/gsc001-review-dossier.yml']
+  push:
+    branches: [genesis]
+    paths: ['genesis/gsc001/review_dossier.py','genesis/gsc001/test_review_dossier.py','.github/workflows/gsc001-review-dossier.yml']
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - run: python3 -m pip install 'cryptography>=42,<48'
+      - name: Verify independent signed review, scope and revocation
+        working-directory: genesis/gsc001
+        run: python3 -m unittest test_review_dossier.py -v
